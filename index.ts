@@ -34,34 +34,15 @@ console.log(circleOfFifths);
 ctx.translate(width / 2, height / 2);
 
 // let currentNote = null;
-const pressedNotes = new Set();
-
-// function drawCircle() {
-//   ctx.clearRect(width / 2, height / 2, width, height);
-
-//   for (let i = 0; i < noteNames.length; i++) {
-//     const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
-//     const x = radius * Math.cos(angle);
-//     const y = radius * Math.sin(angle);
-
-//     ctx.beginPath();
-//     ctx.arc(x, y, 20, 0, 2 * Math.PI);
-//     ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i]) ? 'red' : 'white';
-//     ctx.fill();
-//     ctx.stroke();
-
-//     ctx.fillStyle = 'black';
-//     ctx.textAlign = 'center';
-//     ctx.textBaseline = 'middle';
-//     ctx.fillText(circleOfFifths[i], x, y);
-//   }
-// }
-
+const pressedNotes: Set<number> = new Set();
 
 function drawCircle() {
   ctx.clearRect(-width / 2, -height / 2, width, height);
 
-  const sortedNotes = Array.from(pressedNotes).map(Number).sort((a, b) => a - b);
+  const sortedNotes = Array.from(pressedNotes)
+    .map((e) => Number(circleOfFifthsNumbers[e]))
+    .sort((a, b) => a - b);
+  console.log("sortedNotes", sortedNotes);
 
   ctx.beginPath();
   for (let i = 0; i < sortedNotes.length; i++) {
@@ -74,25 +55,27 @@ function drawCircle() {
     } else {
       ctx.lineTo(x, y);
     }
-  } 
+  }
   ctx.closePath();
-  ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+  ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
   ctx.fill();
 
-  for (let i = 0; i < circleOfFifths.length; i++) {
+  for (let i = 0; i < noteNames.length; i++) {
     const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
     const x = radius * Math.cos(angle);
     const y = radius * Math.sin(angle);
 
     ctx.beginPath();
     ctx.arc(x, y, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = pressedNotes.has(i) ? 'red' : 'white';
+    ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
+      ? "red"
+      : "white";
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(circleOfFifths[i], x, y);
   }
 }
