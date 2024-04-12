@@ -1,4 +1,11 @@
-import { Note, noteColours, noteNames } from "./music.js";
+import {
+  noteColours,
+  noteNames,
+  notesAmount,
+  circleOfFifthsNumbers,
+} from "./music.js";
+
+import { mixHexColors } from "./colours.js";
 
 const canvas = document.getElementById("fifths") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -19,19 +26,6 @@ TODO
 const audioContext = new AudioContext();
 const oscillators = new Map();
 
-const notesAmount = Object.keys(Note).length / 2;
-console.log(`There are ${notesAmount} notes.`);
-
-const circleOfFifths = [];
-const circleOfFifthsNumbers = [];
-let index = 0;
-for (let i = 0; i < notesAmount; i++) {
-  circleOfFifths.push(Object.values(noteNames)[index]);
-  circleOfFifthsNumbers.push(index);
-  index = (index + 7) % notesAmount;
-}
-console.log(`The circle of fifths is`, circleOfFifths);
-
 const pressedNotes: Set<number> = new Set();
 
 function drawCircle() {
@@ -43,19 +37,31 @@ function drawCircle() {
   console.log("sortedNotes", sortedNotes);
 
   ctx.beginPath();
+  const defaultFillColor = "#FF000080";
+  let fillColor;
   for (let i = 0; i < sortedNotes.length; i++) {
     const angle = (sortedNotes[i] / 12) * 2 * Math.PI - Math.PI / 2;
     const x = radius * Math.cos(angle);
     const y = radius * Math.sin(angle);
 
+    const note = circleOfFifthsNumbers[sortedNotes[i]];
+    console.log(`Note is ${note}`);
+
     if (i === 0) {
+      fillColor = noteColours[note];
       ctx.moveTo(x, y);
     } else {
+      const newColour = noteColours[note];
+      const outputColour = mixHexColors(newColour, fillColor);
+      console.log(`Mixing ${newColour} <> ${fillColor} => ${outputColour}`);
+      fillColor = outputColour;
       ctx.lineTo(x, y);
+      ctx.strokeStyle = outputColour;
+      ctx.stroke();
     }
   }
   ctx.closePath();
-  ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+  ctx.fillStyle = fillColor || defaultFillColor;
   ctx.fill();
 
   for (let i = 0; i < notesAmount; i++) {
@@ -65,17 +71,19 @@ function drawCircle() {
 
     ctx.beginPath();
     ctx.arc(x, y, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
-      ? Object.values(noteColours)[i]
-      : // ? "red"
-        "white";
-    ctx.fill();
+    const noteColour = noteColours[circleOfFifthsNumbers[i]];
+    ctx.strokeStyle = noteColour;
+    ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
+      ? noteColour
+      : "white";
+    ctx.fill();
 
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(circleOfFifths[i], x, y);
+    ctx.fillText(noteNames[circleOfFifthsNumbers[i]], x, y);
   }
 }
 
