@@ -12,7 +12,7 @@ const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
 const width = canvas.width;
 const height = canvas.height;
-const radius = Math.min(width, height) / 2;
+const radius = Math.min(width, height) / 2 - 50;
 
 ctx.translate(width / 2, height / 2);
 
@@ -73,7 +73,7 @@ function drawCircle() {
     ctx.arc(x, y, 20, 0, 2 * Math.PI);
     const noteColour = noteColours[circleOfFifthsNumbers[i]];
     ctx.strokeStyle = noteColour;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 12;
     ctx.stroke();
     ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
       ? noteColour
@@ -132,7 +132,6 @@ function onMIDIMessage(event: MIDIMessageEvent) {
     gainNode.connect(audioContext.destination);
     console.log(pressedNotes);
     oscillator.start();
-    drawCircle();
 
     // // Debug info.
     // let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
@@ -151,6 +150,7 @@ function onMIDIMessage(event: MIDIMessageEvent) {
     // Note off event
     pressedNotes.delete(note % 12);
   }
+  drawCircle();
 }
 
 function startLoggingMIDIInput(midiAccess) {
@@ -164,15 +164,20 @@ drawCircle();
 // Keyboard
 // Map keyboard keys to MIDI notes
 const keyToMidi = {
-  // w: 61, // C#4
   a: 60, // C4
+  w: 61,
   s: 62, // D4
+  e: 63,
   d: 64, // E4
   f: 65, // F4
+  t: 66,
   g: 67, // G4
+  y: 68,
   h: 69, // A4
+  u: 70,
   j: 71, // B4
   k: 72, // C5
+  l: 74,
   // ... add more keys
 };
 
@@ -186,7 +191,15 @@ function createMidiEvent(note, velocity, type) {
 // Handle keydown event
 window.addEventListener("keydown", (event) => {
   if (event.repeat) return; // Ignore key repeat
-  const note = keyToMidi[event.key.toLowerCase()];
+
+  const key = event.key;
+  if (key === "Escape") {
+    console.log("Force clearing oscillators and closing audio context.");
+    oscillators.clear();
+    audioContext.close();
+  }
+
+  const note = keyToMidi[key];
   if (note !== undefined) {
     const midiEvent = createMidiEvent(note, 127, 144); // 144 is note on
     onMIDIMessage(midiEvent);

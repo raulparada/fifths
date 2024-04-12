@@ -35,7 +35,7 @@ export const noteColours = {
   [Note.Dsharp]: "#5782F4",
   [Note.E]: "#FBFC53",
   [Note.F]: "#9E26F6",
-  [Note.Fsharp]: "##7FF84D",
+  [Note.Fsharp]: "#7FF84D",
   [Note.G]: "#E63649",
   [Note.Gsharp]: "#89F5F7",
   [Note.A]: "#EDA03A",
