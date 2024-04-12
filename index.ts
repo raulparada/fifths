@@ -8,28 +8,56 @@ TODO
 - Colors
 */
 
-
 const audioContext = new AudioContext();
 const oscillators = new Map();
-
 
 const width = canvas.width;
 const height = canvas.height;
 const radius = Math.min(width, height) / 2;
 
-const noteNames = ['C', 'C# / Db', 'D', 'D# / Eb', 'E', 'F', 'F# / Gb', 'G', 'G# / Ab', 'A', 'A# / Bb', 'B'];
+enum Note {
+  C,
+  Csharp,
+  D,
+  Dsharp,
+  E,
+  F,
+  Fsharp,
+  G,
+  Gsharp,
+  A,
+  Asharp,
+  B,
+}
+
+const noteNames = {
+  [Note.C]: "C",
+  [Note.Csharp]: "C# / Db",
+  [Note.D]: "D",
+  [Note.Dsharp]: "D# / Eb",
+  [Note.E]: "E",
+  [Note.F]: "F",
+  [Note.Fsharp]: "F# / Gb",
+  [Note.G]: "G",
+  [Note.Gsharp]: "G# / Ab",
+  [Note.A]: "A",
+  [Note.Asharp]: "A# / Bb",
+  [Note.B]: "B",
+};
+
+const notesAmount = Object.keys(Note).length / 2;
+console.log(`There are ${notesAmount} notes.`);
 
 const circleOfFifths = [];
 const circleOfFifthsNumbers = [];
 let index = 0;
-for (let i = 0; i < noteNames.length; i++) {
-  circleOfFifths.push(noteNames[index]);
-  circleOfFifthsNumbers.push(index)
-  index = (index + 7) % noteNames.length;
+for (let i = 0; i < notesAmount; i++) {
+  circleOfFifths.push(Object.values(noteNames)[index]);
+  circleOfFifthsNumbers.push(index);
+  index = (index + 7) % notesAmount;
 }
 
 console.log(circleOfFifths);
-
 
 ctx.translate(width / 2, height / 2);
 
@@ -60,7 +88,7 @@ function drawCircle() {
   ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
   ctx.fill();
 
-  for (let i = 0; i < noteNames.length; i++) {
+  for (let i = 0; i < notesAmount; i++) {
     const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
     const x = radius * Math.cos(angle);
     const y = radius * Math.sin(angle);
@@ -84,12 +112,12 @@ function drawCircle() {
 function midiNoteToName(note) {
   const noteName = noteNames[note % 12];
   console.log(`MIDI note ${note} corresponds to key ${noteName}`);
-  return noteName
+  return noteName;
 }
 
 function onMIDISuccess(midiAccess) {
   console.log("MIDI ready!");
-  startLoggingMIDIInput(midiAccess)
+  startLoggingMIDIInput(midiAccess);
 }
 
 function onMIDIFailure(msg) {
@@ -98,43 +126,42 @@ function onMIDIFailure(msg) {
 
 navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
 
-function onMIDIMessage(event) {
+function onMIDIMessage(event: MIDIMessageEvent) {
   // Main.
   const status = event.data[0];
 
   if (status === 144) {
     const note = event.data[1];
+    pressedNotes.add(note % 12);
 
     const frequency = 440 * Math.pow(2, (note - 69) / 12); // Convert MIDI note to frequency
     const oscillator = audioContext.createOscillator();
-    oscillator.type = 'triangle'; // or 'sawtooth' or 'triangle'
+    oscillator.type = "sine"; // or 'sawtooth' or 'triangle'
     oscillator.frequency.value = frequency;
-    oscillator.connect(audioContext.destination);
-    oscillator.start();
     oscillators.set(note, oscillator);
 
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.1; // Adjust volume
-
     const filterNode = audioContext.createBiquadFilter();
-    filterNode.type = 'lowshelf';
-    oscillator.connect(gainNode);
-    gainNode.connect(filterNode);
+    filterNode.type = "lowshelf";
     filterNode.frequency.value = 1000;
-    filterNode.gain.value = -15;
+    filterNode.gain.value = -5;
 
-    pressedNotes.add(note % 12);
-    console.log(pressedNotes)
-    // currentNote = midiNoteToName(note);
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0.5 / (pressedNotes.size + 3 || 1);
+
+    oscillator.connect(gainNode);
+    oscillator.connect(filterNode);
+    gainNode.connect(audioContext.destination);
+    console.log(pressedNotes);
+    oscillator.start();
     drawCircle();
-    
+
     // // Debug info.
     // let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
     // for (const character of event.data) {
-      //   str += `0x${character.toString(16)} `;
-      // }
-      // console.log(str);    
-    } else if (status === 128) {
+    //   str += `0x${character.toString(16)} `;
+    // }
+    // console.log(str);
+  } else if (status === 128) {
     const note = event.data[1];
     const oscillator = oscillators.get(note);
     if (oscillator) {
@@ -145,7 +172,6 @@ function onMIDIMessage(event) {
     // Note off event
     pressedNotes.delete(note % 12);
   }
-
 }
 
 function startLoggingMIDIInput(midiAccess) {
@@ -154,6 +180,45 @@ function startLoggingMIDIInput(midiAccess) {
   });
 }
 
+drawCircle();
 
+// Keyboard
+// Map keyboard keys to MIDI notes
+const keyToMidi = {
+  // w: 61, // C#4
+  a: 60, // C4
+  s: 62, // D4
+  d: 64, // E4
+  f: 65, // F4
+  g: 67, // G4
+  h: 69, // A4
+  j: 71, // B4
+  k: 72, // C5
+  // ... add more keys
+};
 
-drawCircle()
+// Create a new MIDI event
+function createMidiEvent(note, velocity, type) {
+  return {
+    data: [type, note, velocity],
+  };
+}
+
+// Handle keydown event
+window.addEventListener("keydown", (event) => {
+  if (event.repeat) return; // Ignore key repeat
+  const note = keyToMidi[event.key.toLowerCase()];
+  if (note !== undefined) {
+    const midiEvent = createMidiEvent(note, 127, 144); // 144 is note on
+    onMIDIMessage(midiEvent);
+  }
+});
+
+// Handle keyup event
+window.addEventListener("keyup", (event) => {
+  const note = keyToMidi[event.key];
+  if (note !== undefined) {
+    const midiEvent = createMidiEvent(note, 127, 128); // 128 is note off
+    onMIDIMessage(midiEvent);
+  }
+});
