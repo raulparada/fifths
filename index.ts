@@ -1,5 +1,13 @@
+import { Note, noteColours, noteNames } from "./music.js";
+
 const canvas = document.getElementById("fifths") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+const width = canvas.width;
+const height = canvas.height;
+const radius = Math.min(width, height) / 2;
+
+ctx.translate(width / 2, height / 2);
 
 /* 
 TODO
@@ -10,40 +18,6 @@ TODO
 
 const audioContext = new AudioContext();
 const oscillators = new Map();
-
-const width = canvas.width;
-const height = canvas.height;
-const radius = Math.min(width, height) / 2;
-
-enum Note {
-  C,
-  Csharp,
-  D,
-  Dsharp,
-  E,
-  F,
-  Fsharp,
-  G,
-  Gsharp,
-  A,
-  Asharp,
-  B,
-}
-
-const noteNames = {
-  [Note.C]: "C",
-  [Note.Csharp]: "C# / Db",
-  [Note.D]: "D",
-  [Note.Dsharp]: "D# / Eb",
-  [Note.E]: "E",
-  [Note.F]: "F",
-  [Note.Fsharp]: "F# / Gb",
-  [Note.G]: "G",
-  [Note.Gsharp]: "G# / Ab",
-  [Note.A]: "A",
-  [Note.Asharp]: "A# / Bb",
-  [Note.B]: "B",
-};
 
 const notesAmount = Object.keys(Note).length / 2;
 console.log(`There are ${notesAmount} notes.`);
@@ -56,12 +30,8 @@ for (let i = 0; i < notesAmount; i++) {
   circleOfFifthsNumbers.push(index);
   index = (index + 7) % notesAmount;
 }
+console.log(`The circle of fifths is`, circleOfFifths);
 
-console.log(circleOfFifths);
-
-ctx.translate(width / 2, height / 2);
-
-// let currentNote = null;
 const pressedNotes: Set<number> = new Set();
 
 function drawCircle() {
@@ -96,8 +66,9 @@ function drawCircle() {
     ctx.beginPath();
     ctx.arc(x, y, 20, 0, 2 * Math.PI);
     ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
-      ? "red"
-      : "white";
+      ? Object.values(noteColours)[i]
+      : // ? "red"
+        "white";
     ctx.fill();
     ctx.stroke();
 
