@@ -21,3 +21,34 @@ export const handleVisibilityChange = async () => {
     await requestWakeLock();
   }
 };
+
+const __vars = new Set();
+
+export const globalAccess = (options) => {
+  if (Object.keys(options).length != 1) throw new Error("Wrong!");
+  const key = Object.keys(options)[0];
+  const value = options[key];
+  if (globalThis[key] === undefined) {
+    console.log(`Setting global ${key}=${value}`);
+    __vars.add(key);
+    globalThis[key] = value;
+  }
+  return globalThis[key];
+};
+
+export const read = (v: any) => {
+  if (typeof v === "function") {
+    console.log(`Returning function ${v}`);
+    return v();
+  }
+  return v;
+};
+
+globalAccess.read = read;
+
+globalThis.vars = () => {
+  const output = {};
+  __vars.forEach((key: any) => (output[key] = globalThis[key]));
+  console.table(output);
+  return output;
+};

@@ -6,7 +6,7 @@ import {
 } from "./music.js";
 
 import { mixHexColors } from "./colours.js";
-import { handleVisibilityChange } from "./utils.js";
+import { handleVisibilityChange, globalAccess } from "./utils.js";
 
 const canvas = document.getElementById("fifths") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -75,8 +75,7 @@ function drawCircle() {
     const y = radius * Math.sin(angle);
 
     ctx.beginPath();
-    const noteCircleRadius = 40;
-    ctx.arc(x, y, noteCircleRadius, 0, 2 * Math.PI);
+    ctx.arc(x, y, globalAccess({ noteRadius: 40 }), 0, 2 * Math.PI);
     const noteColour = noteColours[circleOfFifthsNumbers[i]];
     ctx.strokeStyle = noteColour;
     ctx.lineWidth = 12;
@@ -164,7 +163,7 @@ drawCircle();
 // Keyboard
 // Map keyboard keys to MIDI notes
 const keyToMidi = {
-  a: 60, // C4
+  a: () => globalAccess({ middleC: 60 }), // C4
   w: 61,
   s: 62, // D4
   e: 63,
@@ -203,7 +202,7 @@ window.addEventListener("keydown", (event) => {
 
   const note = keyToMidi[key];
   if (note !== undefined) {
-    const midiEvent = createMidiEvent(note, 127, 144); // 144 is note on
+    const midiEvent = createMidiEvent(globalAccess.read(note), 127, 144); // 144 is note on
     onMIDIMessage(midiEvent);
   }
 });
@@ -212,7 +211,7 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   const note = keyToMidi[event.key];
   if (note !== undefined) {
-    const midiEvent = createMidiEvent(note, 127, 128); // 128 is note off
+    const midiEvent = createMidiEvent(globalAccess.read(note), 127, 128); // 128 is note off
     onMIDIMessage(midiEvent);
   }
 });
