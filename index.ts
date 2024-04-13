@@ -6,6 +6,7 @@ import {
 } from "./music.js";
 
 import { mixHexColors } from "./colours.js";
+import { handleVisibilityChange } from "./utils.js";
 
 const canvas = document.getElementById("fifths") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -16,11 +17,15 @@ const radius = Math.min(width, height) / 2 - 50;
 
 ctx.translate(width / 2, height / 2);
 
+// Prevent screen from sleeping.
+document.addEventListener("visibilitychange", handleVisibilityChange);
+
 /* 
 TODO
-- Clean up a bit
-- Sound
-- Colors
+- [x] Sound
+- [x] Colors
+- [ ] Chords
+- [ ] Wakelock
 */
 
 const audioContext = new AudioContext();
@@ -173,6 +178,7 @@ const keyToMidi = {
   j: 71, // B4
   k: 72, // C5
   l: 74,
+  ";": 76,
   // ... add more keys
 };
 
@@ -188,6 +194,7 @@ window.addEventListener("keydown", (event) => {
   if (event.repeat) return; // Ignore key repeat
 
   const key = event.key;
+  console.log("keydown event", key);
   if (key === "Escape") {
     console.log("Force clearing oscillators and closing audio context.");
     oscillators.clear();
