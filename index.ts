@@ -70,19 +70,21 @@ function drawCircle() {
     const y = radius * Math.sin(angle);
 
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, 2 * Math.PI);
+    const noteCircleRadius = 40;
+    ctx.arc(x, y, noteCircleRadius, 0, 2 * Math.PI);
     const noteColour = noteColours[circleOfFifthsNumbers[i]];
     ctx.strokeStyle = noteColour;
     ctx.lineWidth = 12;
     ctx.stroke();
     ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
       ? noteColour
-      : "white";
+      : "black";
     ctx.fill();
 
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
     ctx.fillText(noteNames[circleOfFifthsNumbers[i]], x, y);
   }
 }
