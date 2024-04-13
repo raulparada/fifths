@@ -35,10 +35,10 @@ function drawCircle() {
     .map((e) => Number(circleOfFifthsNumbers[e]))
     .sort((a, b) => a - b);
   console.log("sortedNotes", sortedNotes);
-
   ctx.beginPath();
+
+  let fillColor: string;
   const defaultFillColor = "#FF000080";
-  let fillColor;
   for (let i = 0; i < sortedNotes.length; i++) {
     const angle = (sortedNotes[i] / 12) * 2 * Math.PI - Math.PI / 2;
     const x = radius * Math.cos(angle);
@@ -60,9 +60,9 @@ function drawCircle() {
       ctx.stroke();
     }
   }
-  ctx.closePath();
   ctx.fillStyle = fillColor || defaultFillColor;
   ctx.fill();
+  ctx.closePath();
 
   for (let i = 0; i < notesAmount; i++) {
     const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
@@ -85,13 +85,6 @@ function drawCircle() {
     ctx.textBaseline = "middle";
     ctx.fillText(noteNames[circleOfFifthsNumbers[i]], x, y);
   }
-}
-
-// MIDI
-function midiNoteToName(note) {
-  const noteName = noteNames[note % 12];
-  console.log(`MIDI note ${note} corresponds to key ${noteName}`);
-  return noteName;
 }
 
 function onMIDISuccess(midiAccess) {
