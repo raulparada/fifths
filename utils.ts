@@ -52,3 +52,122 @@ globalThis.vars = () => {
   console.table(output);
   return output;
 };
+
+export class LimitedQueue {
+  size: number;
+  timeline: Array<string>;
+  spectrum: Map<string, number>;
+
+  constructor(size: number) {
+    this.size = size;
+    this.timeline = [];
+    this.spectrum = new Map();
+  }
+
+  enqueue(item) {
+    if (this.timeline.length >= this.size) {
+      this.timeline.shift();
+    }
+    this.timeline.push(item);
+    if (item !== undefined && !this.spectrum.has(item)) {
+      const hsv = hexToHsv(item);
+      this.spectrum.set(item, hsv[0]);
+      console.log(
+        `Updated spectrum hex=${item}, h=${hsv[0]}, s=${hsv[1]}, v=${hsv[2]}`
+      );
+    }
+    this.displayQueue();
+  }
+
+  dequeue() {
+    const item = this.timeline.shift();
+    this.displayQueue();
+    return item;
+  }
+
+  getQueue() {
+    return this.timeline;
+  }
+
+  displayQueue() {
+    const timeline = document.getElementById("timeline-container");
+    timeline.innerHTML = ""; // Clear the container
+
+    this.timeline.forEach((color) => {
+      const circle = document.createElement("div");
+      circle.style.width = "20px";
+      circle.style.height = "20px";
+      circle.style.borderRadius = "20%";
+      circle.style.backgroundColor = color;
+      timeline.appendChild(circle);
+    });
+
+    const spectrum = document.getElementById("spectrum-container");
+    spectrum.innerHTML = ""; // Clear the container
+
+    const sortedSpectrum = Array.from(this.spectrum.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map((entry) => entry[0]);
+
+    sortedSpectrum.forEach((color) => {
+      const circle = document.createElement("div");
+      circle.style.width = "20px";
+      circle.style.height = "20px";
+      circle.style.borderRadius = "20%";
+      circle.style.backgroundColor = color;
+      spectrum.appendChild(circle);
+    });
+  }
+}
+
+function hexToHsv(hex: string) {
+  let r = 0,
+    g = 0,
+    b = 0;
+
+  // 3 digits
+  if (hex.length == 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  }
+  // 6 digits
+  else if (hex.length == 7) {
+    r = parseInt(hex[1] + hex[2], 16);
+    g = parseInt(hex[3] + hex[4], 16);
+    b = parseInt(hex[5] + hex[6], 16);
+  }
+
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  let max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let h,
+    s,
+    v = max;
+
+  let d = max - min;
+  s = max == 0 ? 0 : d / max;
+
+  if (max == min) {
+    h = 0; // achromatic
+  } else {
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+
+    h /= 6;
+  }
+
+  return [h, s, v];
+}

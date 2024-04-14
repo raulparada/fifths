@@ -6,14 +6,16 @@ import {
 } from "./music.js";
 
 import { mixHexColors } from "./colours.js";
-import { handleVisibilityChange, globalAccess } from "./utils.js";
+import { handleVisibilityChange, globalAccess, LimitedQueue } from "./utils.js";
+
+const queue = new LimitedQueue(50);
 
 const canvas = document.getElementById("fifths") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
 const width = canvas.width;
 const height = canvas.height;
-const radius = Math.min(width, height) / 2 - 50;
+const radius = Math.min(width, height) / 2 - 60;
 
 ctx.translate(width / 2, height / 2);
 
@@ -26,12 +28,16 @@ TODO
 - [x] Colors
 - [ ] Chords
 - [ ] Wakelock
+- [ ] Display device info
+Bugs:
+- [ ] Ignore meta keys on keydown events.
 */
 
 const audioContext = new AudioContext();
 const oscillators = new Map();
 
 const pressedNotes: Set<number> = new Set();
+let globalFillColor: string = "";
 
 function drawCircle() {
   ctx.clearRect(-width / 2, -height / 2, width, height);
@@ -65,6 +71,7 @@ function drawCircle() {
       ctx.stroke();
     }
   }
+  globalFillColor = fillColor;
   ctx.fillStyle = fillColor || defaultFillColor;
   ctx.fill();
   ctx.closePath();
@@ -75,20 +82,18 @@ function drawCircle() {
     const y = radius * Math.sin(angle);
 
     ctx.beginPath();
-    ctx.arc(x, y, globalAccess({ noteRadius: 40 }), 0, 2 * Math.PI);
+    ctx.arc(x, y, globalAccess({ noteRadius: 50 }), 0, 2 * Math.PI);
     const noteColour = noteColours[circleOfFifthsNumbers[i]];
     ctx.strokeStyle = noteColour;
     ctx.lineWidth = 12;
     ctx.stroke();
-    ctx.fillStyle = pressedNotes.has(circleOfFifthsNumbers[i])
-      ? noteColour
-      : "black";
+    const isPlaying = pressedNotes.has(circleOfFifthsNumbers[i]);
+    ctx.fillStyle = isPlaying ? noteColour : "black";
     ctx.fill();
-
-    ctx.fillStyle = "black";
     ctx.textAlign = "center";
+    ctx.font = "24px Arial";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "white";
+    ctx.fillStyle = isPlaying ? "black" : "white";
     ctx.fillText(noteNames[circleOfFifthsNumbers[i]], x, y);
   }
 }
@@ -215,3 +220,5 @@ window.addEventListener("keyup", (event) => {
     onMIDIMessage(midiEvent);
   }
 });
+
+setInterval(() => queue.enqueue(globalFillColor), 200);
