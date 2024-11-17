@@ -72,8 +72,12 @@ export class LimitedQueue {
     if (item !== undefined && !this.spectrum.has(item)) {
       const hsv = hexToHsv(item);
       this.spectrum.set(item, hsv[0]);
+      const hue = hsv[0];
+      const saturation = hsv[1];
+      const value = hsv[2];
+      const satv = saturation * value;
       console.log(
-        `Updated spectrum hex=${item}, h=${hsv[0]}, s=${hsv[1]}, v=${hsv[2]}`
+        `Updated spectrum hex=${item}, h=${hue}, s=${saturation}, v=${value}, s*v=${satv}`
       );
     }
     this.displayQueue();
