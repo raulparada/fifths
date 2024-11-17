@@ -27,3 +27,7 @@ npm run start
 [chromesthesia]: https://en.wikipedia.org/wiki/Chromesthesia#:~:text=Chromesthesia%20or%20sound%2Dto%2Dcolor,associations%2Fperceptions%20in%20daily%20life
 [light_darkness_and_colours]: https://www.youtube.com/watch?v=2hvprCbk1HU
 [perfect_pitch]: https://en.wikipedia.org/wiki/Absolute_pitch
+
+# See also
+
+For a *much* more mature project in the same space do check out https://chromatone.center/. In hindsight, I should have (again!) first made the effort to find this project and would have saved me coding this garbage.
