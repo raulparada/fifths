@@ -1,0 +1,10 @@
+- [ ] chore: cleanup code.
+- [ ] fix: center :D
+- [ ] fix: Display warning on non-Chromium browsers.
+- [ ] feat: display chord names.
+- [ ] feat: allow customising colours.
+- [ ] feat: reset color palette.
+- [ ] feat: change octave.
+- [ ] feat: play midi file.
+- [ ] feat: prevent screen sleep.
+- [ ] feat: display intervals on edges.
